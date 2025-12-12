@@ -4,6 +4,7 @@ server/.env
 *.log
 .DS_Store
 *.png
+!icons/icon*.png
 !icons/generate-icons.html
 .vercel
 package-lock.json
