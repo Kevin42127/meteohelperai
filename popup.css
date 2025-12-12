@@ -909,6 +909,62 @@ body {
   justify-content: flex-end;
 }
 
+.info-dialog-footer label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #7a8fa0;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-left: 26px;
+}
+
+.info-dialog-footer input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  z-index: 1;
+}
+
+.info-dialog-footer label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  border: 2px solid #7a8fa0;
+  border-radius: 4px;
+  background: #fefefe;
+  transition: all 0.2s ease;
+  z-index: 0;
+}
+
+.info-dialog-footer label:hover::before {
+  border-color: #5a6c7d;
+  background: #f5f4f2;
+}
+
+.info-dialog-footer input[type="checkbox"]:checked ~ label::before,
+.info-dialog-footer label:has(input[type="checkbox"]:checked)::before {
+  background: #7a8fa0;
+  border-color: #7a8fa0;
+}
+
+.info-dialog-footer.welcome-footer {
+  justify-content: space-between;
+  align-items: center;
+}
+
 .info-ok-btn {
   padding: 10px 24px;
   border: none;

@@ -30,6 +30,7 @@ const CITY_LIST = [
 document.addEventListener('DOMContentLoaded', () => {
   initEventListeners();
   loadChatHistory();
+  checkAndShowWelcome();
 });
 
 function initEventListeners() {
@@ -99,6 +100,14 @@ function initEventListeners() {
     if (e.target.id === 'confirmDialog') {
       const dialog = document.getElementById('confirmDialog');
       dialog.classList.remove('visible');
+    }
+  });
+
+  document.getElementById('welcomeOkBtn').addEventListener('click', closeWelcomeDialog);
+  document.getElementById('closeWelcomeBtn').addEventListener('click', closeWelcomeDialog);
+  document.getElementById('welcomeDialog').addEventListener('click', (e) => {
+    if (e.target.id === 'welcomeDialog') {
+      closeWelcomeDialog();
     }
   });
   
@@ -678,7 +687,11 @@ function loadChatHistory() {
         
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
-        contentDiv.textContent = msg.content;
+        if (msg.role === 'ai') {
+          contentDiv.innerHTML = msg.content;
+        } else {
+          contentDiv.textContent = msg.content;
+        }
         
         messageDiv.appendChild(contentDiv);
         row.appendChild(messageDiv);
@@ -687,5 +700,29 @@ function loadChatHistory() {
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
   });
+}
+
+function checkAndShowWelcome() {
+  chrome.storage.local.get(['welcomeShown'], (result) => {
+    if (!result.welcomeShown) {
+      setTimeout(() => {
+        const dialog = document.getElementById('welcomeDialog');
+        dialog.classList.add('visible');
+      }, 300);
+    }
+  });
+}
+
+function closeWelcomeDialog() {
+  const dialog = document.getElementById('welcomeDialog');
+  const dontShowAgain = document.getElementById('dontShowAgain').checked;
+  
+  if (dontShowAgain) {
+    chrome.storage.local.set({ welcomeShown: true }, () => {
+      console.log('已設定不再顯示歡迎訊息');
+    });
+  }
+  
+  dialog.classList.remove('visible');
 }
 

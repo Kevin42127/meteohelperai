@@ -74,6 +74,53 @@
     </div>
   </div>
 
+  <div id="welcomeDialog" class="info-dialog-overlay">
+    <div class="info-dialog">
+      <div class="info-dialog-header">
+        <span class="material-icons">info</span>
+        <h3>歡迎使用臺灣氣象AI助手</h3>
+        <button id="closeWelcomeBtn" class="close-info-btn" title="關閉">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="info-dialog-content">
+        <div class="info-section">
+          <h4>功能介紹</h4>
+          <ul>
+            <li>查詢全台各縣市及鄉鎮區天氣資訊</li>
+            <li>AI 天氣問答，提供專業天氣建議</li>
+            <li>基於中央氣象署官方資料，資訊準確可靠</li>
+            <li>支援自然語言對話，使用簡單直覺</li>
+          </ul>
+        </div>
+        <div class="info-section">
+          <h4>使用步驟</h4>
+          <ul>
+            <li>在上方輸入框輸入縣市或鄉鎮區名稱查詢天氣</li>
+            <li>查詢成功後，可在下方 AI 問答區詢問天氣相關問題</li>
+            <li>AI 會根據當前天氣資料提供專業回答和實用建議</li>
+          </ul>
+        </div>
+        <div class="info-section">
+          <h4>範例問題</h4>
+          <ul>
+            <li>今天適合外出嗎？</li>
+            <li>需要帶雨傘嗎？</li>
+            <li>應該穿什麼衣服？</li>
+            <li>今天會下雨嗎？</li>
+          </ul>
+        </div>
+      </div>
+      <div class="info-dialog-footer welcome-footer">
+        <label for="dontShowAgain">
+          <input type="checkbox" id="dontShowAgain">
+          <span>不再顯示此訊息</span>
+        </label>
+        <button id="welcomeOkBtn" class="info-ok-btn">開始使用</button>
+      </div>
+    </div>
+  </div>
+
   <div id="aiInfoDialog" class="info-dialog-overlay">
     <div class="info-dialog">
       <div class="info-dialog-header">
