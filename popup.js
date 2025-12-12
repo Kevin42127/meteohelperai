@@ -493,7 +493,12 @@ function addChatMessage(role, content) {
   
   const contentDiv = document.createElement('div');
   contentDiv.className = 'message-content';
-  contentDiv.textContent = content;
+  
+  if (role === 'ai') {
+    contentDiv.innerHTML = content;
+  } else {
+    contentDiv.textContent = content;
+  }
   
   messageDiv.appendChild(contentDiv);
   row.appendChild(messageDiv);
@@ -579,7 +584,28 @@ function formatAIResponse(text) {
   
   formatted = formatted.replace(/([。！？])\s*([^\n])/g, '$1\n$2');
   
-  return formatted.trim();
+  formatted = escapeHtml(formatted);
+  
+  const lines = formatted.split('\n');
+  const formattedLines = lines.map(line => {
+    const trimmedLine = line.trim();
+    
+    if (/^\d+\.\s+/.test(trimmedLine)) {
+      return trimmedLine.replace(/^(\d+)\.\s+(.+)$/, '<span class="list-number">$1.</span> $2');
+    }
+    
+    if (/^[•·▪▫○●]\s+/.test(trimmedLine)) {
+      return trimmedLine.replace(/^[•·▪▫○●]\s+(.+)$/, '<span class="list-bullet">•</span> $1');
+    }
+    
+    if (/^-\s+/.test(trimmedLine)) {
+      return trimmedLine.replace(/^-\s+(.+)$/, '<span class="list-bullet">•</span> $1');
+    }
+    
+    return trimmedLine;
+  });
+  
+  return formattedLines.join('<br>').trim();
 }
 
 function addLoadingMessage() {

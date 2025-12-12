@@ -421,24 +421,57 @@ body {
   display: inline-block;
   padding: 12px 16px;
   border-radius: 16px;
-  line-height: 1.5;
+  line-height: 1.6;
   font-size: 14px;
   max-width: 75%;
   min-width: 80px;
-  white-space: pre-wrap;
   word-break: break-word;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   animation: messageSlideIn 0.3s ease-out;
   position: relative;
-  transition: box-shadow 0.2s;
+  transition: all 0.2s ease;
 }
 
 .message:hover {
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.message.ai {
+  white-space: normal;
 }
 
 .message-content {
   display: block;
+}
+
+.message-content .list-number {
+  display: inline-block;
+  color: #5a6c7d;
+  font-weight: 600;
+  margin-right: 6px;
+  min-width: 20px;
+}
+
+.message-content .list-bullet {
+  display: inline-block;
+  color: #7a8fa0;
+  font-weight: 600;
+  margin-right: 8px;
+  margin-left: 2px;
+}
+
+.message-content br {
+  line-height: 1.8;
+}
+
+.message-content .list-number,
+.message-content .list-bullet {
+  vertical-align: top;
+}
+
+.message-content {
+  line-height: 1.7;
 }
 
 .loading-message {
