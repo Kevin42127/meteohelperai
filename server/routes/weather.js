@@ -244,5 +244,271 @@ router.get('/city', async (req, res) => {
   }
 });
 
+router.get('/forecast', async (req, res) => {
+  try {
+    const { city } = req.query;
+
+    if (!city) {
+      return res.status(400).json({ error: '缺少城市參數' });
+    }
+
+    const apiKey = getCwaApiKey();
+    const url = `${CWA_BASE_URL}/F-C0032-003?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(city)}`;
+    
+    const response = await axios.get(url, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.data.success) {
+      throw new Error('無法取得天氣預報資料');
+    }
+
+    const records = response.data.records?.location || [];
+    if (records.length === 0) {
+      return res.status(404).json({ error: '找不到該城市的天氣預報資料' });
+    }
+
+    const location = records[0];
+    const weatherElements = location.weatherElement || [];
+
+    const getElementValue = (elementName, timeIndex = 0) => {
+      const element = weatherElements.find(e => e.elementName === elementName);
+      if (!element || !element.time || !element.time[timeIndex]) {
+        return null;
+      }
+      
+      const timeData = element.time[timeIndex];
+      let value = null;
+      
+      if (timeData.parameter) {
+        if (Array.isArray(timeData.parameter)) {
+          const param = timeData.parameter[0];
+          value = param?.parameterName || param?.parameterValue || null;
+        } else {
+          value = timeData.parameter?.parameterName || timeData.parameter?.parameterValue || null;
+        }
+      }
+      
+      if (value && typeof value === 'string') {
+        value = value.trim();
+        if (value === '' || value === 'null' || value === 'undefined' || value === 'NaN') {
+          value = null;
+        }
+      }
+      
+      return value;
+    };
+
+    const forecast = [];
+    const maxDays = 7;
+    
+    for (let i = 0; i < maxDays; i++) {
+      const wx = getElementValue('Wx', i);
+      const minTemp = getElementValue('MinT', i);
+      const maxTemp = getElementValue('MaxT', i);
+      const pop = getElementValue('PoP', i);
+      
+      if (wx || minTemp || maxTemp) {
+        forecast.push({
+          day: i,
+          weather: wx,
+          minTemp: minTemp,
+          maxTemp: maxTemp,
+          precipitation: pop,
+          startTime: weatherElements[0]?.time?.[i]?.startTime || null,
+          endTime: weatherElements[0]?.time?.[i]?.endTime || null
+        });
+      }
+    }
+
+    res.status(200).json({
+      location: location.locationName || city,
+      forecast: forecast
+    });
+  } catch (error) {
+    console.error('天氣預報API錯誤:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    });
+    
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.statusText || 
+                        error.message ||
+                        '無法取得天氣預報資料';
+    
+    res.status(error.response?.status || 500).json({ 
+      error: '無法取得天氣預報資料：' + errorMessage,
+      details: error.response?.data
+    });
+  }
+});
+
+router.get('/warnings', async (req, res) => {
+  try {
+    const apiKey = getCwaApiKey();
+    const url = `${CWA_BASE_URL}/W-C0033-001?Authorization=${encodeURIComponent(apiKey)}&format=JSON`;
+    
+    const response = await axios.get(url, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.data.success) {
+      throw new Error('無法取得天氣警特報資料');
+    }
+
+    const records = response.data.records?.location || [];
+    const warnings = [];
+
+    records.forEach(location => {
+      if (location.hazardConditions && location.hazardConditions.hazardConditions) {
+        location.hazardConditions.hazardConditions.forEach(hazard => {
+          warnings.push({
+            location: location.locationName,
+            hazardType: hazard.hazard?.hazardType || null,
+            hazardLevel: hazard.hazard?.hazardLevel || null,
+            startTime: hazard.hazard?.startTime || null,
+            endTime: hazard.hazard?.endTime || null,
+            content: hazard.hazard?.hazardStatistics || null
+          });
+        });
+      }
+    });
+
+    res.status(200).json({
+      warnings: warnings,
+      count: warnings.length,
+      updateTime: response.data.records?.datasetInfo?.datasetUpdateTime || new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('天氣警特報API錯誤:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    });
+    
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.statusText || 
+                        error.message ||
+                        '無法取得天氣警特報資料';
+    
+    res.status(error.response?.status || 500).json({ 
+      error: '無法取得天氣警特報資料：' + errorMessage,
+      details: error.response?.data
+    });
+  }
+});
+
+router.get('/sunrise', async (req, res) => {
+  try {
+    const { city } = req.query;
+
+    if (!city) {
+      return res.status(400).json({ error: '缺少城市參數' });
+    }
+
+    const apiKey = getCwaApiKey();
+    const url = `${CWA_BASE_URL}/A-B0062-001?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(city)}`;
+    
+    const response = await axios.get(url, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.data.success) {
+      throw new Error('無法取得日出日落資料');
+    }
+
+    const records = response.data.records?.location || [];
+    if (records.length === 0) {
+      return res.status(404).json({ error: '找不到該城市的日出日落資料' });
+    }
+
+    const location = records[0];
+    const time = location.time || [];
+    
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    
+    const todayData = time.find(t => {
+      const dataTime = t.dataTime || t.DataTime || '';
+      return dataTime.startsWith(todayStr);
+    }) || time[0];
+    
+    if (!todayData) {
+      return res.status(404).json({ error: '找不到今日的日出日落資料' });
+    }
+
+    let sunrise = null;
+    let sunset = null;
+
+    if (todayData.parameter) {
+      if (Array.isArray(todayData.parameter)) {
+        const sunriseParam = todayData.parameter.find(p => 
+          (p.parameterName && p.parameterName.includes('日出')) ||
+          (p.parameterName && p.parameterName.includes('Sunrise'))
+        );
+        const sunsetParam = todayData.parameter.find(p => 
+          (p.parameterName && p.parameterName.includes('日落')) ||
+          (p.parameterName && p.parameterName.includes('Sunset'))
+        );
+        sunrise = sunriseParam?.parameterValue || sunriseParam?.parameterName || null;
+        sunset = sunsetParam?.parameterValue || sunsetParam?.parameterName || null;
+      } else {
+        sunrise = todayData.parameter.parameterValue || todayData.parameter.parameterName || null;
+      }
+    }
+
+    if (todayData.parameter2) {
+      sunset = todayData.parameter2.parameterValue || todayData.parameter2.parameterName || null;
+    }
+
+    if (!sunrise && !sunset) {
+      const allParams = Array.isArray(todayData.parameter) ? todayData.parameter : [todayData.parameter].filter(Boolean);
+      allParams.forEach(param => {
+        const name = param?.parameterName || '';
+        const value = param?.parameterValue || '';
+        if (name.includes('日出') || name.includes('Sunrise')) {
+          sunrise = value || name;
+        }
+        if (name.includes('日落') || name.includes('Sunset')) {
+          sunset = value || name;
+        }
+      });
+    }
+
+    res.status(200).json({
+      location: location.locationName || city,
+      date: todayData.dataTime || todayData.DataTime || todayStr,
+      sunrise: sunrise,
+      sunset: sunset
+    });
+  } catch (error) {
+    console.error('日出日落API錯誤:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data
+    });
+    
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.statusText || 
+                        error.message ||
+                        '無法取得日出日落資料';
+    
+    res.status(error.response?.status || 500).json({ 
+      error: '無法取得日出日落資料：' + errorMessage,
+      details: error.response?.data
+    });
+  }
+});
+
 module.exports = router;
 

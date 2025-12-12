@@ -150,9 +150,20 @@ async function handleCitySearch() {
   weatherInfo.innerHTML = '<div class="loading">載入中...</div>';
 
   try {
-    const weather = await fetchWeatherByCity(cityName);
-    currentWeatherData = weather;
-    displayWeather(weather);
+    const [weather, forecast, warnings, sunrise] = await Promise.allSettled([
+      fetchWeatherByCity(cityName),
+      fetchForecastByCity(cityName),
+      fetchWarnings(),
+      fetchSunriseByCity(cityName)
+    ]);
+    
+    const weatherData = weather.status === 'fulfilled' ? weather.value : null;
+    const forecastData = forecast.status === 'fulfilled' ? forecast.value : null;
+    const warningsData = warnings.status === 'fulfilled' ? warnings.value : null;
+    const sunriseData = sunrise.status === 'fulfilled' ? sunrise.value : null;
+    
+    currentWeatherData = weatherData;
+    displayWeather(weatherData, forecastData, warningsData, sunriseData);
   } catch (error) {
     showError('無法取得天氣資料：' + error.message);
   }
@@ -179,7 +190,55 @@ async function fetchWeatherByCity(cityName) {
   }
 }
 
-function displayWeather(data) {
+async function fetchForecastByCity(cityName) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/weather/forecast?city=${encodeURIComponent(cityName)}`);
+    const data = await response.json();
+    
+    if (data.error) {
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('取得天氣預報錯誤:', error);
+    return null;
+  }
+}
+
+async function fetchWarnings() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/weather/warnings`);
+    const data = await response.json();
+    
+    if (data.error) {
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('取得天氣警特報錯誤:', error);
+    return null;
+  }
+}
+
+async function fetchSunriseByCity(cityName) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/weather/sunrise?city=${encodeURIComponent(cityName)}`);
+    const data = await response.json();
+    
+    if (data.error) {
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('取得日出日落錯誤:', error);
+    return null;
+  }
+}
+
+function displayWeather(data, forecastData, warningsData, sunriseData) {
   const weatherInfo = document.getElementById('weatherInfo');
   
   if (!data) {
@@ -192,7 +251,7 @@ function displayWeather(data) {
     return;
   }
   
-  console.log('顯示天氣資料:', data);
+  console.log('顯示天氣資料:', data, forecastData, warningsData, sunriseData);
 
   let tempDisplay = '--';
   if (data.temperature) {
@@ -242,6 +301,21 @@ function displayWeather(data) {
       </div>
     `);
   }
+
+  if (sunriseData && (sunriseData.sunrise || sunriseData.sunset)) {
+    detailItems.push(`
+      <div class="weather-detail-item">
+        <span class="material-icons">wb_twilight</span>
+        <span>日出<br>${sunriseData.sunrise || '--'}</span>
+      </div>
+    `);
+    detailItems.push(`
+      <div class="weather-detail-item">
+        <span class="material-icons">nightlight</span>
+        <span>日落<br>${sunriseData.sunset || '--'}</span>
+      </div>
+    `);
+  }
   
   if (detailItems.length === 0) {
     detailItems.push(`
@@ -249,6 +323,61 @@ function displayWeather(data) {
         <span>目前僅提供溫度與降雨機率資訊</span>
       </div>
     `);
+  }
+
+  let warningsHtml = '';
+  if (warningsData && warningsData.warnings && warningsData.warnings.length > 0) {
+    const relevantWarnings = warningsData.warnings.filter(w => 
+      w.location && data.location && w.location.includes(data.location.replace('市', '').replace('縣', ''))
+    );
+    
+    if (relevantWarnings.length > 0) {
+      warningsHtml = `
+        <div class="weather-warnings">
+          <div class="warnings-header">
+            <span class="material-icons">warning</span>
+            <span>天氣警特報</span>
+          </div>
+          <div class="warnings-list">
+            ${relevantWarnings.slice(0, 3).map(w => `
+              <div class="warning-item">
+                <span class="warning-type">${w.hazardType || '天氣特報'}</span>
+                <span class="warning-level">${w.hazardLevel || ''}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+  }
+
+  let forecastHtml = '';
+  if (forecastData && forecastData.forecast && forecastData.forecast.length > 0) {
+    const weekDays = ['今天', '明天', '後天', '週四', '週五', '週六', '週日'];
+    forecastHtml = `
+      <div class="weather-forecast">
+        <div class="forecast-header">
+          <span class="material-icons">calendar_today</span>
+          <span>一週預報</span>
+        </div>
+        <div class="forecast-list">
+          ${forecastData.forecast.slice(0, 7).map((day, index) => {
+            const dayName = weekDays[index] || `第${index + 1}天`;
+            const tempRange = day.minTemp && day.maxTemp ? `${day.minTemp}~${day.maxTemp}°C` : 
+                            day.minTemp ? `${day.minTemp}°C` : 
+                            day.maxTemp ? `${day.maxTemp}°C` : '--';
+            return `
+              <div class="forecast-item">
+                <div class="forecast-day">${dayName}</div>
+                <div class="forecast-weather">${day.weather || '--'}</div>
+                <div class="forecast-temp">${tempRange}</div>
+                ${day.precipitation ? `<div class="forecast-pop">降雨 ${day.precipitation}%</div>` : ''}
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
   }
 
   const html = `
@@ -263,6 +392,8 @@ function displayWeather(data) {
       <div class="weather-details">
         ${detailItems.join('')}
       </div>
+      ${warningsHtml}
+      ${forecastHtml}
     </div>
   `;
   
