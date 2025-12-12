@@ -39,7 +39,11 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.listen(PORT, () => {
-  console.log(`氣象AI助手後端服務運行於 http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`氣象AI助手後端服務運行於 http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
 

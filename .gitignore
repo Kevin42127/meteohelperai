@@ -5,4 +5,5 @@ server/.env
 .DS_Store
 *.png
 !icons/generate-icons.html
+.vercel
 

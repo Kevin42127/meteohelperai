@@ -13,6 +13,8 @@
 
 ### 1. 安裝後端服務
 
+#### 本地開發
+
 ```bash
 cd server
 npm install
@@ -20,6 +22,18 @@ npm start
 ```
 
 後端服務將運行於 `http://localhost:3000`
+
+#### Vercel 部署
+
+專案已配置 Vercel 部署，可透過以下方式部署：
+
+1. 連接 GitHub 倉庫到 Vercel
+2. 在 Vercel 專案設定中新增環境變數：
+   - `GROQ_API_KEY`
+   - `CWA_API_KEY`
+3. 部署後，更新 `popup.js` 中的 `API_BASE_URL` 為您的 Vercel URL
+
+生產環境 API 網址：`https://meteohelperai.vercel.app`
 
 ### 2. 安裝 Chrome 擴充功能
 
