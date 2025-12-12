@@ -40,6 +40,25 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
+app.get('/privacy.html', (req, res) => {
+  const privacyPath = path.join(__dirname, '..', 'privacy.html');
+  if (fs.existsSync(privacyPath)) {
+    res.sendFile(privacyPath);
+  } else {
+    res.status(404).send('隱私政策頁面不存在');
+  }
+});
+
+app.get('/privacy.css', (req, res) => {
+  const cssPath = path.join(__dirname, '..', 'privacy.css');
+  if (fs.existsSync(cssPath)) {
+    res.type('text/css');
+    res.sendFile(cssPath);
+  } else {
+    res.status(404).send('樣式檔案不存在');
+  }
+});
+
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`臺灣氣象AI助手後端服務運行於 http://localhost:${PORT}`);
