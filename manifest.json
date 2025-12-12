@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "臺灣氣象AI助手",
   "version": "1.0.0",
-  "description": "臺灣氣象AI助手 - 查詢天氣與 AI 問答",
+  "description": "查詢天氣與 AI 問答",
   "permissions": [
     "storage"
   ],
