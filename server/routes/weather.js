@@ -105,6 +105,16 @@ router.get('/location', async (req, res) => {
   }
 });
 
+function isCityOnly(locationName) {
+  const cities = [
+    '基隆市', '臺北市', '新北市', '桃園市', '新竹市', '新竹縣',
+    '苗栗縣', '臺中市', '彰化縣', '南投縣', '雲林縣', '嘉義市',
+    '嘉義縣', '臺南市', '高雄市', '屏東縣', '宜蘭縣', '花蓮縣',
+    '臺東縣', '澎湖縣', '金門縣', '連江縣'
+  ];
+  return cities.includes(locationName);
+}
+
 router.get('/city', async (req, res) => {
   try {
     const { city } = req.query;
@@ -114,25 +124,107 @@ router.get('/city', async (req, res) => {
     }
 
     const apiKey = getCwaApiKey();
-    const url = `${CWA_BASE_URL}/F-C0032-001?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(city)}`;
-    
-    const response = await axios.get(url, {
-      headers: {
-        'Accept': 'application/json'
+    let location = null;
+    let weatherElements = [];
+    let isTownship = false;
+
+    // 策略：如果輸入包含鄉鎮區，先嘗試鄉鎮區查詢，失敗則降級到縣市查詢
+    const cityMatch = city.match(/^(.*?[市縣])/);
+    const cityName = cityMatch ? cityMatch[1] : city;
+    const isInputCityOnly = isCityOnly(city);
+
+    if (isInputCityOnly) {
+      // 純縣市名稱，直接使用縣市 API
+      const cityUrl = `${CWA_BASE_URL}/F-C0032-001?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(city)}`;
+      
+      const response = await axios.get(cityUrl, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.data.success || !response.data.records?.location?.length) {
+        throw new Error(`無法取得「${city}」的天氣資料，請確認輸入的縣市名稱是否正確`);
       }
-    });
 
-    if (!response.data.success) {
-      throw new Error('無法取得天氣資料');
+      const records = response.data.records.location;
+      location = records[0];
+      weatherElements = location.weatherElement || [];
+    } else {
+      // 包含鄉鎮區，先嘗試鄉鎮區查詢，失敗則降級到縣市查詢
+      const townshipUrl = `${CWA_BASE_URL}/F-D0047-093?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(city)}`;
+      
+      try {
+        const townshipResponse = await axios.get(townshipUrl, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        console.log('鄉鎮區 API 回應:', {
+          success: townshipResponse.data.success,
+          hasRecords: !!townshipResponse.data.records?.location?.length,
+          locationCount: townshipResponse.data.records?.location?.length || 0,
+          responseData: townshipResponse.data
+        });
+
+        if (townshipResponse.data.success && townshipResponse.data.records?.location?.length > 0) {
+          const records = townshipResponse.data.records.location;
+          location = records[0];
+          weatherElements = location.weatherElement || [];
+          isTownship = true;
+          console.log('成功使用鄉鎮區 API 取得資料:', location.locationName);
+        } else {
+          throw new Error('鄉鎮區查詢無資料，降級到縣市查詢');
+        }
+      } catch (townshipError) {
+        console.log('鄉鎮區查詢失敗，降級到縣市查詢:', {
+          error: townshipError.message,
+          input: city,
+          extractedCity: cityName,
+          responseStatus: townshipError.response?.status,
+          responseData: townshipError.response?.data
+        });
+
+        // 降級到縣市查詢
+        const cityUrl = `${CWA_BASE_URL}/F-C0032-001?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(cityName)}`;
+        
+        try {
+          const cityResponse = await axios.get(cityUrl, {
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+
+          console.log('降級縣市 API 回應:', {
+            success: cityResponse.data.success,
+            hasRecords: !!cityResponse.data.records?.location?.length,
+            locationCount: cityResponse.data.records?.location?.length || 0
+          });
+
+          if (cityResponse.data.success && cityResponse.data.records?.location?.length > 0) {
+            const records = cityResponse.data.records.location;
+            location = records[0];
+            weatherElements = location.weatherElement || [];
+            console.log('成功使用縣市 API 取得資料（降級）:', location.locationName);
+          } else {
+            throw new Error(`無法取得「${city}」的天氣資料。已嘗試鄉鎮區和縣市查詢，請確認輸入的地名是否正確。`);
+          }
+        } catch (cityError) {
+          console.error('降級縣市查詢也失敗:', {
+            message: cityError.message,
+            response: cityError.response?.data,
+            status: cityError.response?.status
+          });
+          
+          throw new Error(`無法取得「${city}」的天氣資料。請嘗試查詢縣市名稱（如：${cityName}），或確認輸入的地名是否正確。`);
+        }
+      }
     }
 
-    const records = response.data.records?.location || [];
-    if (records.length === 0) {
-      return res.status(404).json({ error: '找不到該城市的天氣資料' });
+    if (!location || !weatherElements) {
+      return res.status(404).json({ error: '找不到該位置的天氣資料' });
     }
-
-    const location = records[0];
-    const weatherElements = location.weatherElement || [];
 
     console.log('城市 API 回應資料結構:', JSON.stringify({
       locationName: location.locationName,
@@ -253,25 +345,90 @@ router.get('/forecast', async (req, res) => {
     }
 
     const apiKey = getCwaApiKey();
-    const url = `${CWA_BASE_URL}/F-C0032-003?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(city)}`;
-    
-    const response = await axios.get(url, {
-      headers: {
-        'Accept': 'application/json'
+    let location = null;
+    let weatherElements = [];
+
+    if (isCityOnly(city)) {
+      const url = `${CWA_BASE_URL}/F-C0032-003?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(city)}`;
+      
+      const response = await axios.get(url, {
+        headers: {
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.data.success) {
+        throw new Error('無法取得天氣預報資料');
       }
-    });
 
-    if (!response.data.success) {
-      throw new Error('無法取得天氣預報資料');
+      const records = response.data.records?.location || [];
+      if (records.length === 0) {
+        return res.status(404).json({ error: '找不到該城市的天氣預報資料' });
+      }
+
+      location = records[0];
+      weatherElements = location.weatherElement || [];
+    } else {
+      const townshipUrl = `${CWA_BASE_URL}/F-D0047-093?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(city)}`;
+      
+      try {
+        const townshipResponse = await axios.get(townshipUrl, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (townshipResponse.data.success && townshipResponse.data.records?.location?.length > 0) {
+          const records = townshipResponse.data.records.location;
+          location = records[0];
+          weatherElements = location.weatherElement || [];
+        } else {
+          const cityMatch = city.match(/^(.*?[市縣])/);
+          if (cityMatch) {
+            const cityName = cityMatch[1];
+            const fallbackUrl = `${CWA_BASE_URL}/F-C0032-003?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(cityName)}`;
+            const fallbackResponse = await axios.get(fallbackUrl, {
+              headers: {
+                'Accept': 'application/json'
+              }
+            });
+            if (fallbackResponse.data.success && fallbackResponse.data.records?.location?.length > 0) {
+              const records = fallbackResponse.data.records.location;
+              location = records[0];
+              weatherElements = location.weatherElement || [];
+            } else {
+              throw new Error('無法取得天氣預報資料');
+            }
+          } else {
+            throw new Error('無法取得天氣預報資料');
+          }
+        }
+      } catch (townshipError) {
+        const cityMatch = city.match(/^(.*?[市縣])/);
+        if (cityMatch) {
+          const cityName = cityMatch[1];
+          const fallbackUrl = `${CWA_BASE_URL}/F-C0032-003?Authorization=${encodeURIComponent(apiKey)}&format=JSON&locationName=${encodeURIComponent(cityName)}`;
+          const fallbackResponse = await axios.get(fallbackUrl, {
+            headers: {
+              'Accept': 'application/json'
+            }
+          });
+          if (fallbackResponse.data.success && fallbackResponse.data.records?.location?.length > 0) {
+            const records = fallbackResponse.data.records.location;
+            location = records[0];
+            weatherElements = location.weatherElement || [];
+          } else {
+            throw new Error('無法取得天氣預報資料');
+          }
+        } else {
+          throw new Error('無法取得天氣預報資料');
+        }
+      }
     }
 
-    const records = response.data.records?.location || [];
-    if (records.length === 0) {
-      return res.status(404).json({ error: '找不到該城市的天氣預報資料' });
+    if (!location || !weatherElements) {
+      return res.status(404).json({ error: '找不到該位置的天氣預報資料' });
     }
-
-    const location = records[0];
-    const weatherElements = location.weatherElement || [];
 
     const getElementValue = (elementName, timeIndex = 0) => {
       const element = weatherElements.find(e => e.elementName === elementName);
