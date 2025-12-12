@@ -1,7 +1,7 @@
 {
   "name": "weather-ai-assistant-server",
   "version": "1.0.0",
-  "description": "氣象AI助手後端服務",
+  "description": "臺灣氣象AI助手後端服務",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

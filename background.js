@@ -1,4 +1,4 @@
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('氣象AI助手已安裝');
+  console.log('臺灣氣象AI助手已安裝');
 });
 

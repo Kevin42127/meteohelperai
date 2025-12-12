@@ -42,7 +42,7 @@ app.get('/health', (req, res) => {
 
 if (require.main === module) {
   app.listen(PORT, () => {
-    console.log(`氣象AI助手後端服務運行於 http://localhost:${PORT}`);
+    console.log(`臺灣氣象AI助手後端服務運行於 http://localhost:${PORT}`);
   });
 }
 

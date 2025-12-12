@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "氣象AI助手",
+  "name": "臺灣氣象AI助手",
   "version": "1.0.0",
   "description": "整合中央氣象署天氣資料與 Groq AI 的智慧天氣助手",
   "permissions": [
