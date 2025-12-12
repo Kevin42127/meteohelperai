@@ -35,7 +35,12 @@
 
     <section class="ai-section">
       <div class="ai-header">
-        <h2>AI 天氣問答</h2>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <h2>AI 天氣問答</h2>
+          <button id="aiInfoBtn" class="info-btn" title="了解 AI 功能">
+            <span class="material-icons">info_outline</span>
+          </button>
+        </div>
         <button id="clearAllBtn" class="clear-all-btn" title="刪除所有訊息">
           <span class="material-icons">delete_outline</span>
         </button>
@@ -62,6 +67,50 @@
       <div class="confirm-dialog-actions">
         <button id="confirmCancelBtn" class="confirm-btn cancel-btn">取消</button>
         <button id="confirmOkBtn" class="confirm-btn ok-btn">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="aiInfoDialog" class="info-dialog-overlay">
+    <div class="info-dialog">
+      <div class="info-dialog-header">
+        <span class="material-icons">lightbulb_outline</span>
+        <h3>AI 天氣問答功能說明</h3>
+        <button id="closeInfoBtn" class="close-info-btn" title="關閉">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+      <div class="info-dialog-content">
+        <div class="info-section">
+          <h4>功能特色</h4>
+          <ul>
+            <li>根據當前天氣資料提供專業回答</li>
+            <li>支援自然語言對話，就像跟朋友聊天一樣</li>
+            <li>提供實用的天氣建議（穿著、外出等）</li>
+            <li>所有回答基於中央氣象署官方資料</li>
+          </ul>
+        </div>
+        <div class="info-section">
+          <h4>使用方式</h4>
+          <ul>
+            <li>先查詢縣市天氣資料</li>
+            <li>在輸入框輸入天氣相關問題</li>
+            <li>AI 會根據當前天氣資料回答</li>
+            <li>可詢問溫度、降雨、穿著建議等問題</li>
+          </ul>
+        </div>
+        <div class="info-section">
+          <h4>範例問題</h4>
+          <ul>
+            <li>今天適合外出嗎？</li>
+            <li>需要帶雨傘嗎？</li>
+            <li>應該穿什麼衣服？</li>
+            <li>今天會下雨嗎？</li>
+          </ul>
+        </div>
+      </div>
+      <div class="info-dialog-footer">
+        <button id="infoOkBtn" class="info-ok-btn">我知道了</button>
       </div>
     </div>
   </div>

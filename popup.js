@@ -44,6 +44,28 @@ function initEventListeners() {
   });
   document.getElementById('clearAllBtn').addEventListener('click', clearAllMessages);
   
+  document.getElementById('aiInfoBtn').addEventListener('click', () => {
+    const dialog = document.getElementById('aiInfoDialog');
+    dialog.classList.add('visible');
+  });
+  
+  document.getElementById('closeInfoBtn').addEventListener('click', () => {
+    const dialog = document.getElementById('aiInfoDialog');
+    dialog.classList.remove('visible');
+  });
+  
+  document.getElementById('infoOkBtn').addEventListener('click', () => {
+    const dialog = document.getElementById('aiInfoDialog');
+    dialog.classList.remove('visible');
+  });
+  
+  document.getElementById('aiInfoDialog').addEventListener('click', (e) => {
+    if (e.target.id === 'aiInfoDialog') {
+      const dialog = document.getElementById('aiInfoDialog');
+      dialog.classList.remove('visible');
+    }
+  });
+  
   document.getElementById('confirmCancelBtn').addEventListener('click', () => {
     const dialog = document.getElementById('confirmDialog');
     dialog.classList.remove('visible');
