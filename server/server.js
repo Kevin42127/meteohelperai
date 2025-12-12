@@ -1,11 +1,12 @@
 const path = require('path');
 const fs = require('fs');
 
-const envPath = path.join(__dirname, '.env');
-if (fs.existsSync(envPath)) {
-  require('dotenv').config({ path: envPath });
-} else {
-  console.warn('警告：找不到 .env 檔案，使用預設值');
+// 只在本地開發環境載入 .env 檔案（Vercel 使用環境變數）
+if (process.env.VERCEL !== '1' && !process.env.VERCEL_ENV) {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    require('dotenv').config({ path: envPath });
+  }
 }
 
 const express = require('express');

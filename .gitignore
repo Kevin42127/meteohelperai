@@ -6,4 +6,5 @@ server/.env
 *.png
 !icons/generate-icons.html
 .vercel
+package-lock.json
 
