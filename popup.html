@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>氣象AI助手</title>
+  <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>氣象AI助手</h1>
+    </header>
+
+    <section class="weather-section">
+      <div class="weather-header">
+        <h2>天氣資訊</h2>
+      </div>
+      
+      <div class="location-input-wrapper">
+        <div class="location-input">
+          <input type="text" id="cityInput" placeholder="例如：臺北市、新北市、臺中市" autocomplete="off">
+          <button id="searchBtn" class="search-btn">
+            <span class="material-icons">search</span>
+          </button>
+        </div>
+        <div id="citySuggestions" class="city-suggestions"></div>
+      </div>
+
+      <div id="weatherInfo" class="weather-info">
+        <div style="text-align: center; padding: 40px 20px; color: #95a5a6; font-size: 14px;">請輸入縣市名稱查詢天氣<br><span style="font-size: 12px; color: #b0b0b0;">例如：臺北市、新北市、臺中市、高雄市</span></div>
+      </div>
+    </section>
+
+    <section class="ai-section">
+      <div class="ai-header">
+        <h2>AI 天氣問答</h2>
+        <button id="clearAllBtn" class="clear-all-btn" title="刪除所有訊息">
+          <span class="material-icons">delete_outline</span>
+        </button>
+      </div>
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-input-container">
+        <input type="text" id="chatInput" placeholder="詢問天氣相關問題...">
+        <button id="sendBtn" class="send-btn">
+          <span class="material-icons">send</span>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <div id="confirmDialog" class="confirm-dialog-overlay">
+    <div class="confirm-dialog">
+      <div class="confirm-dialog-header">
+        <span class="material-icons">warning</span>
+        <h3>確認刪除</h3>
+      </div>
+      <div class="confirm-dialog-content">
+        <p>確定要刪除所有訊息嗎？此操作無法復原。</p>
+      </div>
+      <div class="confirm-dialog-actions">
+        <button id="confirmCancelBtn" class="confirm-btn cancel-btn">取消</button>
+        <button id="confirmOkBtn" class="confirm-btn ok-btn">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+
