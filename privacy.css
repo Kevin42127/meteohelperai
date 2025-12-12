@@ -1,0 +1,152 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Microsoft JhengHei', 'Segoe UI', Arial, sans-serif;
+  background: #f7f6f3;
+  color: #3a3a3a;
+  line-height: 1.6;
+}
+
+.privacy-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: #fefefe;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.privacy-header {
+  background: #5a6c7d;
+  color: #f5f5f0;
+  padding: 40px 30px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.privacy-header h1 {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+.privacy-header .subtitle {
+  font-size: 18px;
+  color: #e8e8e4;
+  margin-bottom: 8px;
+}
+
+.privacy-header .update-date {
+  font-size: 14px;
+  color: #d0d0cc;
+}
+
+.privacy-content {
+  flex: 1;
+  padding: 40px 30px;
+}
+
+.privacy-section {
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 2px solid #e8e6e2;
+}
+
+.privacy-section:last-of-type {
+  border-bottom: none;
+}
+
+.privacy-section h2 {
+  font-size: 24px;
+  color: #5a6c7d;
+  font-weight: 500;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #7a8fa0;
+}
+
+.privacy-section h3 {
+  font-size: 18px;
+  color: #6b7d8a;
+  font-weight: 500;
+  margin-top: 20px;
+  margin-bottom: 12px;
+}
+
+.privacy-section p {
+  font-size: 16px;
+  color: #4a4a4a;
+  margin-bottom: 16px;
+  line-height: 1.8;
+}
+
+.privacy-section ul {
+  margin-left: 24px;
+  margin-bottom: 16px;
+}
+
+.privacy-section li {
+  font-size: 16px;
+  color: #4a4a4a;
+  margin-bottom: 12px;
+  line-height: 1.8;
+  list-style-type: disc;
+}
+
+.privacy-section li strong {
+  color: #5a6c7d;
+  font-weight: 500;
+}
+
+.privacy-section a {
+  color: #7a8fa0;
+  text-decoration: none;
+  border-bottom: 1px solid #7a8fa0;
+  transition: all 0.2s;
+}
+
+.privacy-section a:hover {
+  color: #5a6c7d;
+  border-bottom-color: #5a6c7d;
+}
+
+.privacy-footer {
+  background: #5a6c7d;
+  color: #f5f5f0;
+  padding: 24px 30px;
+  text-align: center;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .privacy-header {
+    padding: 30px 20px;
+  }
+
+  .privacy-header h1 {
+    font-size: 26px;
+  }
+
+  .privacy-content {
+    padding: 30px 20px;
+  }
+
+  .privacy-section h2 {
+    font-size: 20px;
+  }
+
+  .privacy-section h3 {
+    font-size: 16px;
+  }
+
+  .privacy-section p,
+  .privacy-section li {
+    font-size: 14px;
+  }
+}
+
